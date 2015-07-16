@@ -1,0 +1,14 @@
+{application, etst,
+ [
+  {description, "An Erlang compressed ternary search tree library."},
+  {vsn, "1"},
+  {modules, [
+             etst
+            ]},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {env, []}
+ ]}.
