@@ -1,11 +1,12 @@
 -module(etst).
 
--export([new/0, insert/2]).
+-export([new/0, insert/2, lookup/2]).
 
 
 %% API
 new() ->
     {none, empty, empty, empty}.
+
 
 insert(Key, {none, empty, empty, empty}) ->
     {Key, empty, empty, empty};
@@ -28,3 +29,17 @@ ensure_nonempty(empty) ->
     new();
 ensure_nonempty(T) ->
     T.
+
+
+lookup(Key, {Key, _, _, _}) ->
+    true;
+lookup(_, {_, empty, empty, empty}) ->
+    false;
+lookup(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, Lo, _Eq, _Hi}) when KHead < NHead ->
+    lookup(Key, Lo);
+lookup(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _Lo, _Eq, Hi}) when KHead > NHead ->
+    lookup(Key, Hi);
+lookup(Key, {NodeKey, _Lo, Eq, _Hi}) ->
+    PrefLen = binary:longest_common_prefix([Key, NodeKey]),
+    <<_Pref:PrefLen/binary, RestKey/binary>> = Key,
+    lookup(RestKey, Eq).
