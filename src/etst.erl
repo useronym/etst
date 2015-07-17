@@ -31,15 +31,15 @@ ensure_nonempty(T) ->
     T.
 
 
-lookup(Key, {Key, _, _, _}) ->
-    true;
-lookup(_, {_, empty, empty, empty}) ->
-    false;
-lookup(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, Lo, _Eq, _Hi}) when KHead < NHead ->
+lookup(Key, {Key, Value, _, _, _}) ->
+    Value;
+lookup(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _NodeVal, Lo, _Eq, _Hi}) when KHead < NHead ->
     lookup(Key, Lo);
-lookup(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _Lo, _Eq, Hi}) when KHead > NHead ->
+lookup(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _NodeVal, _Lo, _Eq, Hi}) when KHead > NHead ->
     lookup(Key, Hi);
-lookup(Key, {NodeKey, _Lo, Eq, _Hi}) ->
+lookup(Key, {NodeKey, _NodeVal, _Lo, Eq, _Hi}) ->
     PrefLen = binary:longest_common_prefix([Key, NodeKey]),
     <<_Pref:PrefLen/binary, RestKey/binary>> = Key,
-    lookup(RestKey, Eq).
+    lookup(RestKey, Eq);
+lookup(_Key, empty) ->
+    none.
