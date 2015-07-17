@@ -47,7 +47,11 @@ insert_test() ->
             empty},
         {<<"2">>, val2, empty, empty, empty},
         {<<"z">>, val5, {<<"xa">>, val6, empty, empty, empty}, empty, empty}},
-    T8).
+    T8),
+    U1 = etst:new(),
+    U2 = etst:insert(<<"abcd">>, abcd, U1),
+    U3 = etst:insert(<<"ab">>, ab, U2),
+    ?assertEqual({<<"ab">>, ab, empty, {<<"cd">>, abcd, empty, empty, empty}, empty}, U3).
 
 lookup_test() ->
     T1 = etst:new(),

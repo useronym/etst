@@ -29,8 +29,10 @@ insert(Key, Value, {NodeKey, NodeVal, Lo, Eq, Hi}) ->
     case RestPref of
         <<>> ->
             {NodeKey, NodeVal, Lo, insert(RestKey, Value, ensure_nonempty(Eq)), Hi};
-        _ ->
-            {Pref, none, empty, insert(RestKey, Value, {RestPref, NodeVal, Lo, Eq, Hi}), empty}
+        _ when RestKey /= <<>> ->
+            {Pref, none, empty, insert(RestKey, Value, {RestPref, NodeVal, Lo, Eq, Hi}), empty};
+        _ when RestKey == <<>> ->
+            {Pref, Value, empty, {RestPref, NodeVal, Lo, Eq, Hi}, empty}
     end.
 
 -spec ensure_nonempty(tree()) -> tree().
