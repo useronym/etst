@@ -16,8 +16,8 @@ new() ->
 
 
 -spec insert(key(), value(), tree()) -> tree().
-insert(Key, Value, {none, none, empty, empty, empty}) ->
-    {Key, Value, empty, empty, empty};
+insert(Key, Value, {NodeKey, _, Lo, Eq, Hi}) when NodeKey == none orelse Key == NodeKey ->
+    {Key, Value, Lo, Eq, Hi};
 insert(Key = <<KHead:1/binary, _/binary>>, Value, {NodeKey = <<NHead:1/binary, _/binary>>, NodeVal, Lo, Eq, Hi}) when KHead < NHead ->
     {NodeKey, NodeVal, insert(Key, Value, ensure_nonempty(Lo)), Eq, Hi};
 insert(Key = <<KHead:1/binary, _/binary>>, Value, {NodeKey = <<NHead:1/binary, _/binary>>, NodeVal, Lo, Eq, Hi}) when KHead > NHead ->
