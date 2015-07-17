@@ -3,11 +3,19 @@
 -export([new/0, insert/3, lookup/2]).
 
 
+-type tree() :: {key(), value(), tree(), tree(), tree()} | empty.
+
+-type key() :: binary() | none.
+-type value() :: term().
+
+
 %% API
+-spec new() -> tree().
 new() ->
     {none, none, empty, empty, empty}.
 
 
+-spec insert(key(), value(), tree()) -> tree().
 insert(Key, Value, {none, none, empty, empty, empty}) ->
     {Key, Value, empty, empty, empty};
 insert(Key = <<KHead:1/binary, _/binary>>, Value, {NodeKey = <<NHead:1/binary, _/binary>>, NodeVal, Lo, Eq, Hi}) when KHead < NHead ->
@@ -25,12 +33,14 @@ insert(Key, Value, {NodeKey, NodeVal, Lo, Eq, Hi}) ->
             {Pref, none, empty, insert(RestKey, Value, {RestPref, NodeVal, Lo, Eq, Hi}), empty}
     end.
 
+-spec ensure_nonempty(tree()) -> tree().
 ensure_nonempty(empty) ->
     new();
 ensure_nonempty(T) ->
     T.
 
 
+-spec lookup(key(), tree()) -> value().
 lookup(Key, {Key, Value, _, _, _}) ->
     Value;
 lookup(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _NodeVal, Lo, _Eq, _Hi}) when KHead < NHead ->
