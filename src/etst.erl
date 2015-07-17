@@ -1,28 +1,28 @@
 -module(etst).
 
--export([new/0, insert/2, lookup/2]).
+-export([new/0, insert/3, lookup/2]).
 
 
 %% API
 new() ->
-    {none, empty, empty, empty}.
+    {none, none, empty, empty, empty}.
 
 
-insert(Key, {none, empty, empty, empty}) ->
-    {Key, empty, empty, empty};
-insert(Key = <<KHead:1/binary, _/binary>>, {NodeKey = <<NHead:1/binary, _/binary>>, Lo, Eq, Hi}) when KHead < NHead ->
-    {NodeKey, insert(Key, ensure_nonempty(Lo)), Eq, Hi};
-insert(Key = <<KHead:1/binary, _/binary>>, {NodeKey = <<NHead:1/binary, _/binary>>, Lo, Eq, Hi}) when KHead > NHead ->
-    {NodeKey, Lo, Eq, insert(Key, ensure_nonempty(Hi))};
-insert(Key, {NodeKey, Lo, Eq, Hi}) ->
+insert(Key, Value, {none, none, empty, empty, empty}) ->
+    {Key, Value, empty, empty, empty};
+insert(Key = <<KHead:1/binary, _/binary>>, Value, {NodeKey = <<NHead:1/binary, _/binary>>, NodeVal, Lo, Eq, Hi}) when KHead < NHead ->
+    {NodeKey, NodeVal, insert(Key, Value, ensure_nonempty(Lo)), Eq, Hi};
+insert(Key = <<KHead:1/binary, _/binary>>, Value, {NodeKey = <<NHead:1/binary, _/binary>>, NodeVal, Lo, Eq, Hi}) when KHead > NHead ->
+    {NodeKey, NodeVal, Lo, Eq, insert(Key, Value, ensure_nonempty(Hi))};
+insert(Key, Value, {NodeKey, NodeVal, Lo, Eq, Hi}) ->
     PrefLen = binary:longest_common_prefix([Key, NodeKey]),
     <<Pref:PrefLen/binary, RestPref/binary>> = NodeKey,
     <<Pref:PrefLen/binary, RestKey/binary>> = Key,
     case RestPref of
         <<>> ->
-            {NodeKey, Lo, insert(RestKey, ensure_nonempty(Eq)), Hi};
+            {NodeKey, NodeVal, Lo, insert(RestKey, Value, ensure_nonempty(Eq)), Hi};
         _ ->
-            {Pref, empty, insert(RestKey, {RestPref, Lo, Eq, Hi}), empty}
+            {Pref, none, empty, insert(RestKey, Value, {RestPref, NodeVal, Lo, Eq, Hi}), empty}
     end.
 
 ensure_nonempty(empty) ->
