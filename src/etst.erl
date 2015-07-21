@@ -43,15 +43,22 @@ ensure_nonempty(T) ->
 
 
 -spec lookup(key(), tree()) -> value().
-lookup(Key, {Key, Value, _, _, _}) ->
-    Value;
-lookup(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _NodeVal, Lo, _Eq, _Hi}) when KHead < NHead ->
-    lookup(Key, Lo);
-lookup(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _NodeVal, _Lo, _Eq, Hi}) when KHead > NHead ->
-    lookup(Key, Hi);
-lookup(Key, {NodeKey, _NodeVal, _Lo, Eq, _Hi}) ->
-    PrefLen = binary:longest_common_prefix([Key, NodeKey]),
+lookup(Key, Tree) ->
+    case lookup1(Key, Tree, <<>>) of
+        {Key, Value} -> Value;
+        _ -> none
+    end.
+
+-spec lookup1(key(), tree(), key()) -> {key(), value()}.
+lookup1(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _NodeVal, Lo, _Eq, _Hi}, FullKey) when KHead < NHead ->
+    lookup1(Key, Lo, FullKey);
+lookup1(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _NodeVal, _Lo, _Eq, Hi}, FullKey) when KHead > NHead ->
+    lookup1(Key, Hi, FullKey);
+lookup1(Key, {Key, Value, _, _, _}, FullKey) ->
+    {<<FullKey/binary, Key/binary>>, Value};
+lookup1(Key, {NodeKey, _NodeVal, _Lo, Eq, _Hi}, FullKey) ->
+    PrefLen = byte_size(NodeKey),
     <<_Pref:PrefLen/binary, RestKey/binary>> = Key,
-    lookup(RestKey, Eq);
-lookup(_Key, empty) ->
-    none.
+    lookup1(RestKey, Eq, <<FullKey/binary, NodeKey/binary>>);
+lookup1(_Key, _, FullKey) ->
+    {FullKey, none}.
