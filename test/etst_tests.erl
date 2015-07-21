@@ -67,4 +67,16 @@ lookup_test() ->
     ?assertEqual(val6, etst:lookup(<<"xa">>, T7)),
     ?assertEqual(none, etst:lookup(<<"nonexistent">>, T7)),
     ?assertEqual(none, etst:lookup(<<"k1-nonexistent">>, T7)),
-    ?assertEqual(none, etst:lookup(<<"ab">>, T7)).
+    ?assertEqual(none, etst:lookup(<<"ab">>, T7)),
+    ?assertEqual(none, etst:lookup(<<"axde">>, T7)).
+
+utf8_test() ->
+    T1 = etst:new(),
+    T2 = etst:insert(<<"Ψabc">>, val1, T1),
+    T3 = etst:insert(<<"άΦΨ">>, val2, T2),
+    T4 = etst:insert(<<"ΦΨabεc">>, val3, T3),
+    ?assertEqual(val1, etst:lookup(<<"Ψabc">>, T4)),
+    ?assertEqual(val2, etst:lookup(<<"άΦΨ">>, T4)),
+    ?assertEqual(val3, etst:lookup(<<"ΦΨabεc">>, T4)),
+    ?assertEqual(none, etst:lookup(<<"Ωabc">>, T4)),
+    ?assertEqual(none, etst:lookup(<<"ΦΨabεd">>, T4)).
