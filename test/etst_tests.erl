@@ -79,4 +79,8 @@ utf8_test() ->
     ?assertEqual(val2, etst:lookup(<<"άΦΨ">>, T4)),
     ?assertEqual(val3, etst:lookup(<<"ΦΨabεc">>, T4)),
     ?assertEqual(none, etst:lookup(<<"Ωabc">>, T4)),
-    ?assertEqual(none, etst:lookup(<<"ΦΨabεd">>, T4)).
+    ?assertEqual(none, etst:lookup(<<"ΦΨabεd">>, T4)),
+    T5 = etst:insert(<<"Χ">>, val4, T4),
+    T6 = etst:insert(<<"Ω">>, val5, T5),
+    ?assertEqual(val4, etst:lookup(<<"Χ">>, T6)),
+    ?assertEqual(val5, etst:lookup(<<"Ω">>, T6)).
