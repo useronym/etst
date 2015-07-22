@@ -43,22 +43,24 @@ ensure_nonempty(T) ->
 
 
 -spec lookup(key(), tree()) -> value().
-lookup(Key, Tree) ->
-    case lookup1(Key, Tree, <<>>) of
-        {Key, Value} -> Value;
-        _ -> none
-    end.
+lookup(<<H:8, T/binary>>, Tree) ->
+    lookup1(H, T, Tree).
 
--spec lookup1(key(), tree(), key()) -> {key(), value()}.
-lookup1(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _NodeVal, Lo, _Eq, _Hi}, FullKey) when KHead < NHead ->
-    lookup1(Key, Lo, FullKey);
-lookup1(Key = <<KHead:1/binary, _/binary>>, {<<NHead:1/binary, _/binary>>, _NodeVal, _Lo, _Eq, Hi}, FullKey) when KHead > NHead ->
-    lookup1(Key, Hi, FullKey);
-lookup1(Key, {Key, Value, _, _, _}, FullKey) ->
-    {<<FullKey/binary, Key/binary>>, Value};
-lookup1(Key, {NodeKey, _NodeVal, _Lo, Eq, _Hi}, FullKey) ->
-    PrefLen = byte_size(NodeKey),
-    <<_Pref:PrefLen/binary, RestKey/binary>> = Key,
-    lookup1(RestKey, Eq, <<FullKey/binary, NodeKey/binary>>);
-lookup1(_Key, _, FullKey) ->
-    {FullKey, none}.
+-spec lookup1(integer(), key(), tree()) -> {key(), value()}.
+lookup1(H, T, {<<NodeH:8, NodeT/binary>>, NodeVal, Lo, Eq, Hi}) ->
+    if
+        H < NodeH -> lookup1(H, T, Lo);
+        H > NodeH -> lookup1(H, T, Hi);
+        true ->
+            NodeTSize = byte_size(NodeT),
+            case T of
+                <<NodeT:NodeTSize/binary, Rest/binary>> ->
+                    if
+                        Rest == <<>> -> NodeVal;
+                        true -> lookup(Rest, Eq)
+                    end;
+                _ -> none
+            end
+    end;
+lookup1(_, _, _) ->
+    none.
